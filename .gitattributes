@@ -1,0 +1,3 @@
+
+*.h linguist-language=Cpp
+vendor linguist-generated
