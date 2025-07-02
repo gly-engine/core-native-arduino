@@ -4,12 +4,19 @@
 #define lvm_c
 #include "lua54/luaconf.h"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
+
 #include "lua54/lua.h"
 #include "lua54/lualib.h"
 #include "lua54/lauxlib.h"
-}
 
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef GLY_LUA_IMPL
 #include "lua54/lzio.c"
 #include "lua54/lctype.c"
 #include "lua54/lopcodes.c"
@@ -44,3 +51,4 @@ extern "C" {
 #include "lua54/linit.c"
 
 #include "lua54/lauxlib.c"
+#endif

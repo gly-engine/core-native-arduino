@@ -3,8 +3,7 @@
 
 #include <cstdint>
 
-//#include "vendor/lua.hpp"
-
+#include "vendor/lua.h"
 #include "hooks.cpp"
 
 class GlyCore {
@@ -24,6 +23,7 @@ public:
     //lua_State *const getLua();
 
 private:
+    lua_State *L;
     uint16_t fps = 0;
     uint16_t count_frame = 0;
     unsigned long time_debounce = 0;
