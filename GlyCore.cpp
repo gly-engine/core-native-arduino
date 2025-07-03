@@ -60,7 +60,7 @@ void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
             return 0;
         }},
         {"native_text_mensure", [](lua_State *L) {
-            float w = 1, h = 1;
+            int16_t w = 1, h = 1;
             native_text_mensure(luaL_checkstring(L, 1), &w, &h);
             lua_settop(L, 0);
             lua_pushnumber(L, w);
@@ -68,7 +68,7 @@ void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
             return 2;
         }},
         {"native_text_font_size", [](lua_State *L) {
-            native_text_font_size((uint32_t)floorf(luaL_checknumber(L, 1)));
+            native_text_font_size(floorf(luaL_checknumber(L, 1)));
             lua_settop(L, 0);
             return 0;
         }},
@@ -101,7 +101,10 @@ void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
     }
 
     do {
-        luaL_loadbuffer(L, engine_lua, engine_lua_len, "E");
+        if(luaL_loadbuffer(L, engine_lua, engine_lua_len, "E") != LUA_OK) {
+            errors += luaL_checkstring(L, -1);
+            break;
+        }
         if(lua_pcall(L, 0, 0, 0) != LUA_OK) {
             errors += luaL_checkstring(L, -1);
             break;
@@ -112,7 +115,10 @@ void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
         lua_pushnumber(L, height);
 
         size_t game_code_len = strlen(game_code);
-        luaL_loadbuffer(L, game_code, game_code_len, "G");
+        if(luaL_loadbuffer(L, game_code, game_code_len, "G") != LUA_OK) {
+            errors += luaL_checkstring(L, -1);
+            break;
+        }
         if(lua_pcall(L, 0, 1, 0) != LUA_OK) {
             errors += luaL_checkstring(L, -1);
             break;
