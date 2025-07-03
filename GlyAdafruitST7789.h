@@ -1,4 +1,5 @@
 #ifndef H_GLY_ADAFRUIT_ST7789
+#define H_GLY_ADAFRUIT_ST7789
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 
