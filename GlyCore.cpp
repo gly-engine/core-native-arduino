@@ -100,26 +100,38 @@ void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
         lua_register(L, fn.name, fn.func);
     }
 
-    luaL_loadbuffer(L, gly_core_engine, gly_core_engine_len, "E");
-	lua_pcall(L, 0, 0, 0);
+    do {
+        luaL_loadbuffer(L, engine_lua, engine_lua_len, "E");
+        if(lua_pcall(L, 0, 0, 0) != LUA_OK) {
+            errors += luaL_checkstring(L, -1);
+            break;
+        }
 
-    lua_getglobal(L, "native_callback_init");
-    lua_pushnumber(L, width);
-    lua_pushnumber(L, height);
+        lua_getglobal(L, "native_callback_init");
+        lua_pushnumber(L, width);
+        lua_pushnumber(L, height);
 
-    size_t game_code_len = strlen(game_code);
-    luaL_loadbuffer(L, game_code, game_code_len, "G");
-	lua_pcall(L, 0, 1, 0);
-    lua_pcall(L, 3, 0, 0);
+        size_t game_code_len = strlen(game_code);
+        luaL_loadbuffer(L, game_code, game_code_len, "G");
+        if(lua_pcall(L, 0, 1, 0) != LUA_OK) {
+            errors += luaL_checkstring(L, -1);
+            break;
+        }
+        if(lua_pcall(L, 3, 0, 0) != LUA_OK) {
+            errors += luaL_checkstring(L, -1);
+            break;
+        }
 
-    lua_getglobal(L, "native_callback_loop");
-    ref_native_callback_loop = luaL_ref(L, LUA_REGISTRYINDEX);
+        lua_getglobal(L, "native_callback_loop");
+        ref_native_callback_loop = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    lua_getglobal(L, "native_callback_draw");
-    ref_native_callback_draw = luaL_ref(L, LUA_REGISTRYINDEX);
-    
-    lua_getglobal(L, "native_callback_keyboard");
-    ref_native_callback_keyboard = luaL_ref(L, LUA_REGISTRYINDEX);
+        lua_getglobal(L, "native_callback_draw");
+        ref_native_callback_draw = luaL_ref(L, LUA_REGISTRYINDEX);
+        
+        lua_getglobal(L, "native_callback_keyboard");
+        ref_native_callback_keyboard = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+    while(0);
 }
 
 bool GlyCore::update()
@@ -131,14 +143,17 @@ bool GlyCore::update()
         count_frame++;
         time_delta = delta;
         time_last_frame = now;
-/*
+
         lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_loop);
         lua_pushnumber(L, delta);
-        lua_pcall(L, 1, 0, 0);
+        if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+            errors += luaL_checkstring(L, -1);
+        }
     
         lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_draw);
-        lua_pcall(L, 0, 0, 0);
-*/
+        if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+            errors += luaL_checkstring(L, -1);
+        }
     }
 
     if ((now - time_last_frame_1s) >= 1000000) {
@@ -168,6 +183,16 @@ void GlyCore::setFramerate(uint8_t frames_per_second)
     } else { 
         time_frame = 1000000 / frames_per_second;
     }
+}
+
+bool GlyCore::hasErrors() const {
+    return !errors.isEmpty();
+}
+const String& GlyCore::getErrors() const {
+    return errors;
+}
+void GlyCore::clearErrors() {
+    errors = "";
 }
 
 void GlyCore::setBtnDebounce(uint8_t miliseconds)

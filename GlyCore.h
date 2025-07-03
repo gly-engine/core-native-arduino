@@ -2,12 +2,13 @@
 #define H_GLYCORE
 
 #include <cstdint>
+#include <WString.h>
 
 #include "vendor/lua.h"
 #include "hooks.cpp"
 
-extern const char *const gly_core_engine;
-extern const size_t gly_core_engine_len;
+extern const char engine_lua[];
+extern const unsigned int engine_lua_len;
 
 class GlyCore {
 public:
@@ -23,9 +24,13 @@ public:
     void setBtnKeyboard(uint8_t, uint8_t, const char *const);
     uint16_t getAvarageFPS();
     uint16_t getInstantFPS();
+    bool hasErrors() const;
+    const String& getErrors() const;
+    void clearErrors();
 
 private:
     lua_State *L;
+    String errors;
     uint16_t fps = 0;
     uint16_t count_frame = 0;
     unsigned long time_debounce = 0;
