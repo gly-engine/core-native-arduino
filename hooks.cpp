@@ -1,4 +1,8 @@
-#ifdef GLY_HOOK_IMPL
+
+#if defined(GLY_HOOK_NATIVE)
+#define CREATE_GLY_HOOK(ret, name, args) \
+    ret name args;
+#elif defined(GLY_HOOK_IMPL)
 #define CREATE_GLY_HOOK(ret, name, args) \
     __attribute__((weak)) ret name args {}
 #else
@@ -8,8 +12,12 @@
 
 #include <cstring>
 
+#ifndef GLY_HOOK_NATIVE
 CREATE_GLY_HOOK(void, gly_hook_display_lib, ())
+CREATE_GLY_HOOK(void, gly_hook_display_rot, (uint8_t))
 CREATE_GLY_HOOK(void, gly_hook_display_init, (uint16_t, uint16_t))
+#endif
+
 CREATE_GLY_HOOK(void, native_draw_start, ())
 CREATE_GLY_HOOK(void, native_draw_flush, ())
 CREATE_GLY_HOOK(void, native_draw_color, (uint32_t))

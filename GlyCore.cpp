@@ -145,7 +145,7 @@ bool GlyCore::update()
         time_last_frame = now;
 
         lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_loop);
-        lua_pushnumber(L, delta);
+        lua_pushnumber(L, delta/1000);
         if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
             errors += luaL_checkstring(L, -1);
         }
