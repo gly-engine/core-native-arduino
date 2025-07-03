@@ -1,17 +1,125 @@
 #include "GlyCore.h"
 
+#include <math.h>
+#include <Arduino.h>
+
 #define GLY_HOOK_IMPL
 #include "hooks.cpp"
 
-#include <Arduino.h>
-
 void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
 {
-    Serial.println("gly init start");
+    static const luaL_Reg glylibs[] = {
+        {"native_draw_start", [](lua_State *L) {
+            native_draw_start();
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_draw_flush", [](lua_State *L) {
+            native_draw_flush();
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_draw_clear", [](lua_State *L) {
+            native_draw_clear(luaL_checkinteger(L, 1));
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_draw_color", [](lua_State *L) {
+            native_draw_color(luaL_checkinteger(L, 1));
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_draw_rect", [](lua_State *L) {
+            native_draw_rect(
+                luaL_checkinteger(L, 1),
+                luaL_checknumber(L, 2),
+                luaL_checknumber(L, 3),
+                luaL_checknumber(L, 4),
+                luaL_checknumber(L, 5)
+            );
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_draw_line", [](lua_State *L) {
+            native_draw_line(
+                luaL_checknumber(L, 1),
+                luaL_checknumber(L, 2),
+                luaL_checknumber(L, 3),
+                luaL_checknumber(L, 4)
+            );
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_text_print", [](lua_State *L) {
+            native_text_print(
+                luaL_checknumber(L, 1),
+                luaL_checknumber(L, 2),
+                luaL_checkstring(L, 3)
+            );
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_text_mensure", [](lua_State *L) {
+            float w = 1, h = 1;
+            native_text_mensure(luaL_checkstring(L, 1), &w, &h);
+            lua_settop(L, 0);
+            lua_pushnumber(L, w);
+            lua_pushnumber(L, h);
+            return 2;
+        }},
+        {"native_text_font_size", [](lua_State *L) {
+            native_text_font_size((uint32_t)floorf(luaL_checknumber(L, 1)));
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_text_font_name", [](lua_State *L) {
+            native_text_font_name(luaL_checkstring(L, 1));
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_text_font_default", [](lua_State *L) {
+            native_text_font_default(luaL_checkinteger(L, 1));
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {"native_text_font_previous", [](lua_State *L) {
+            native_text_font_previous();
+            lua_settop(L, 0);
+            return 0;
+        }},
+        {NULL, NULL}
+    };
+
     gly_hook_display_init(width, height);
+
     L = luaL_newstate();
     luaL_openlibs(L);
-    Serial.println("gly init end");
+
+    for (const auto& fn : glylibs) {
+        if (!fn.name) break;
+        lua_register(L, fn.name, fn.func);
+    }
+
+    luaL_loadbuffer(L, gly_core_engine, gly_core_engine_len, "E");
+	lua_pcall(L, 0, 0, 0);
+
+    lua_getglobal(L, "native_callback_init");
+    lua_pushnumber(L, width);
+    lua_pushnumber(L, height);
+
+    size_t game_code_len = strlen(game_code);
+    luaL_loadbuffer(L, game_code, game_code_len, "G");
+	lua_pcall(L, 0, 1, 0);
+    lua_pcall(L, 3, 0, 0);
+
+    lua_getglobal(L, "native_callback_loop");
+    ref_native_callback_loop = luaL_ref(L, LUA_REGISTRYINDEX);
+
+    lua_getglobal(L, "native_callback_draw");
+    ref_native_callback_draw = luaL_ref(L, LUA_REGISTRYINDEX);
+    
+    lua_getglobal(L, "native_callback_keyboard");
+    ref_native_callback_keyboard = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 bool GlyCore::update()
@@ -23,6 +131,14 @@ bool GlyCore::update()
         count_frame++;
         time_delta = delta;
         time_last_frame = now;
+/*
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_loop);
+        lua_pushnumber(L, delta);
+        lua_pcall(L, 1, 0, 0);
+    
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_draw);
+        lua_pcall(L, 0, 0, 0);
+*/
     }
 
     if ((now - time_last_frame_1s) >= 1000000) {

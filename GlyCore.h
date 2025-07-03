@@ -6,6 +6,9 @@
 #include "vendor/lua.h"
 #include "hooks.cpp"
 
+extern const char *const gly_core_engine;
+extern const size_t gly_core_engine_len;
+
 class GlyCore {
 public:
     GlyCore() {}
@@ -20,7 +23,6 @@ public:
     void setBtnKeyboard(uint8_t, uint8_t, const char *const);
     uint16_t getAvarageFPS();
     uint16_t getInstantFPS();
-    //lua_State *const getLua();
 
 private:
     lua_State *L;
@@ -31,7 +33,9 @@ private:
     unsigned long time_frame = 0;
     unsigned long time_last_frame = 0;
     unsigned long time_last_frame_1s = 0;
-
+    int ref_native_callback_loop = 0;
+    int ref_native_callback_draw = 0;
+    int ref_native_callback_keyboard = 0;
 };
 
 #endif
