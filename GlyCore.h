@@ -7,17 +7,15 @@
 #include "vendor/lua.h"
 #include "hooks.cpp"
 
-extern const char engine_lua[];
-extern const unsigned int engine_lua_len;
-
 class GlyCore {
 public:
-    GlyCore() {}
-    template <typename T>
-    GlyCore(T displayLib) {
-        gly_hook_display_lib(displayLib);
+    template<typename gameType, typename engineType, typename displayType>
+    GlyCore(gameType game, engineType library, displayType display) {
+        gly_hook_display_lib(display);
+        loadEngine(library);
+        loadGame(game);
     }
-    void init(uint16_t, uint16_t, const char *const);
+    void init(uint16_t, uint16_t);
     bool update();
     void setFramerate(uint8_t);
     void setBtnDebounce(uint8_t);
@@ -29,6 +27,18 @@ public:
     void clearErrors();
 
 private:
+    bool started = false;
+    // load game control
+    inline void loadEngine(const __FlashStringHelper* src) { engine_storage = src; }
+    inline void loadEngine(const char* src) { engine_code = const_cast<char*>(src); }
+    inline void loadEngine(char* src) { engine_code = (src); }
+    inline void loadGame(const __FlashStringHelper* src) { game_storage = src; }
+    inline void loadGame(const char* src) { game_code = const_cast<char*>(src); }
+    inline void loadGame(char* src) { game_code = (src); }
+    const __FlashStringHelper* engine_storage = nullptr;
+    const __FlashStringHelper* game_storage = nullptr;
+    char* engine_code = nullptr;
+    char* game_code = nullptr;
     // framerate control
     uint16_t fps = 0;
     uint16_t count_frame = 0;

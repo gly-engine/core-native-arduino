@@ -6,16 +6,10 @@
 #define GLY_HOOK_IMPL
 #include "hooks.cpp"
 
-struct ButtonInfo {
-    uint8_t pin;
-    bool activeLow;
-    const char* name;
-    bool lastState;
-    unsigned long lastChange;
-};
-
-void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
+void GlyCore::init(uint16_t width, uint16_t height)
 {
+    if (started) return;
+
     static const luaL_Reg glylibs[] = {
         {"native_draw_start", [](lua_State *L) {
             native_draw_start();
@@ -109,10 +103,35 @@ void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
     }
 
     do {
-        if(luaL_loadbuffer(L, engine_lua, engine_lua_len, "E") != LUA_OK) {
+        size_t game_len = 0;
+        size_t engine_len = 0;
+
+        if (engine_storage) {
+            engine_len = strlen_P(reinterpret_cast<PGM_P>(engine_storage));
+            engine_code = new char[engine_len];
+        } else {
+            engine_len = strlen(engine_code);
+        }
+
+        if (engine_code == nullptr || engine_len == 0) {
+            errors += "empty engine";
+            break;
+        }
+
+        if (engine_storage) {
+            strncpy_P(engine_code, reinterpret_cast<PGM_P>(engine_storage), engine_len);
+            engine_code[engine_len] = '\0';
+        }
+
+        if(luaL_loadbuffer(L, engine_code, engine_len, "E") != LUA_OK) {
             errors += luaL_checkstring(L, -1);
             break;
         }
+
+        if(engine_storage) {
+            delete[] engine_code;
+        }
+
         if(lua_pcall(L, 0, 0, 0) != LUA_OK) {
             errors += luaL_checkstring(L, -1);
             break;
@@ -122,15 +141,37 @@ void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
         lua_pushnumber(L, width);
         lua_pushnumber(L, height);
 
-        size_t game_code_len = strlen(game_code);
-        if(luaL_loadbuffer(L, game_code, game_code_len, "G") != LUA_OK) {
+        if (game_storage) {
+            game_len = strlen_P(reinterpret_cast<PGM_P>(game_storage));
+            game_code = new game_code[game_len];
+        } else {
+            game_len = strlen(game_code);
+        }
+
+        if (game_code == nullptr || game_len == 0) {
+            errors += "empty game";
+            break;
+        }
+
+        if (game_storage) {
+            strncpy_P(game_code, reinterpret_cast<PGM_P>(game_storage), game_len);
+            game_code[game_len] = '\0';
+        }
+
+        if(luaL_loadbuffer(L, game_code, game_len, "G") != LUA_OK) {
             errors += luaL_checkstring(L, -1);
             break;
         }
+
+        if(game_storage) {
+            delete[] game_code;
+        }
+
         if(lua_pcall(L, 0, 1, 0) != LUA_OK) {
             errors += luaL_checkstring(L, -1);
             break;
         }
+
         if(lua_pcall(L, 3, 0, 0) != LUA_OK) {
             errors += luaL_checkstring(L, -1);
             break;
@@ -144,12 +185,16 @@ void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
         
         lua_getglobal(L, "native_callback_keyboard");
         ref_native_callback_keyboard = luaL_ref(L, LUA_REGISTRYINDEX);
+
+        started = true;
     }
     while(0);
 }
 
 bool GlyCore::update()
 {
+    if(!started) return false;
+
     unsigned long now = micros();
     unsigned long delta = now - time_last_frame;
 
