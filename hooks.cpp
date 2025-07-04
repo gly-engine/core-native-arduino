@@ -31,3 +31,5 @@ CREATE_GLY_HOOK(void, native_text_font_name, (const char*))
 CREATE_GLY_HOOK(void, native_text_font_default, (uint8_t))
 CREATE_GLY_HOOK(void, native_text_font_previous, ())
 CREATE_GLY_HOOK(void, native_image_draw, (int16_t, int16_t, const char*))
+
+#undef CREATE_GLY_HOOK
