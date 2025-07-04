@@ -1,0 +1,17 @@
+GlyCore                 KEYWORD1
+GlyEngine               KEYWORD1
+GlyEngineLite           KEYWORD1
+GlyEngineMicro          KEYWORD1
+GlySampleAsteroids      KEYWORD1
+setDisplay              KEYWORD2
+setFramerate            KEYWORD2
+setBtnDebounce          KEYWORD2
+setResolution           KEYWORD2
+setEngine               KEYWORD2
+setGame                 KEYWORD2
+setBtnKeyboard          KEYWORD2
+getErrors               KEYWORD2
+hasErrors               KEYWORD2
+update                  KEYWORD2
+getInstantFPS           KEYWORD2
+getAvarageFPS           KEYWORD2
