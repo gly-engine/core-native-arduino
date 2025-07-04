@@ -6,6 +6,14 @@
 #define GLY_HOOK_IMPL
 #include "hooks.cpp"
 
+struct ButtonInfo {
+    uint8_t pin;
+    bool activeLow;
+    const char* name;
+    bool lastState;
+    unsigned long lastChange;
+};
+
 void GlyCore::init(uint16_t width, uint16_t height, const char *const game_code)
 {
     static const luaL_Reg glylibs[] = {
@@ -145,6 +153,24 @@ bool GlyCore::update()
     unsigned long now = micros();
     unsigned long delta = now - time_last_frame;
 
+    for (uint8_t i = 0; i < numButtons; ++i) {
+        ButtonInfo& btn = buttons[i];
+        bool state = (digitalRead(btn.pin) == (btn.activeLow ? LOW : HIGH));
+        if (state != btn.lastState && (now - btn.lastChange >= time_debounce)) {
+            btn.lastState = state;
+            btn.lastChange = now;
+            if (ref_native_callback_keyboard != 0) {
+                lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_keyboard);
+                lua_pushstring(L, btn.name);
+                lua_pushboolean(L, state);
+                if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
+                    errors = lua_tostring(L, -1);
+                    lua_pop(L, 1);
+                }
+            }
+        }
+    }
+
     if (delta >= time_frame) {
         count_frame++;
         time_delta = delta;
@@ -201,12 +227,26 @@ void GlyCore::clearErrors() {
     errors = "";
 }
 
-void GlyCore::setBtnDebounce(uint8_t miliseconds)
+void GlyCore::setBtnDebounce(uint8_t ms)
 {
-    time_debounce = miliseconds;
+    time_debounce = static_cast<uint32_t>(ms) * 1000;
 }
 
-void GlyCore::setBtnKeyboard(uint8_t, uint8_t, const char *const)
+void GlyCore::setBtnKeyboard(uint8_t pin, uint8_t pinModeType, const char *const name)
 {
+    if (numButtons >= MAX_BUTTONS) {
+        errors += "maximum number of buttons exceeded";
+        return;
+    }
 
+    pinMode(pin, pinModeType);
+    bool activeLow = (pinModeType == INPUT_PULLUP);
+
+    buttons[numButtons++] = {
+        pin,
+        activeLow,
+        name,
+        digitalRead(pin) == (activeLow ? LOW : HIGH),
+        micros()
+    };
 }
