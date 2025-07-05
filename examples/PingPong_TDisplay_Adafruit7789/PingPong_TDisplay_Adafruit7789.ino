@@ -17,13 +17,13 @@
 
 SPIClass spiTFT(VSPI);
 Adafruit_ST7789 tft(&spiTFT, TFT_CS, TFT_DC, TFT_RST);
-GlyCore engine(&tft);
+GlyCore engine(GlySamplePong, GlyEngine, &tft);
 
 void setup() {
     Serial.begin(115200);
     spiTFT.begin(TFT_SCLK, -1, TFT_MOSI, TFT_CS);
 
-    engine.init(240, 135, GlySamplePong);
+    engine.init(240, 135);
     engine.setFramerate(30);
     engine.setBtnDebounce(10);
     engine.setBtnKeyboard(BTN_A, INPUT_PULLUP, "up");
@@ -35,6 +35,7 @@ void setup() {
   
 void loop() {
   if (engine.hasErrors()) {
+    Serial.println("Lua MEM:" + String(engine.getLuaMemTotal()) + " " + String(engine.getLuaMemPercentage()) + "%");
     Serial.println(engine.getErrors());
     for(;;);
   }
