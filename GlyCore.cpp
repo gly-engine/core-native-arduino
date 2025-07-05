@@ -252,6 +252,24 @@ void GlyCore::setFramerate(uint8_t frames_per_second)
     }
 }
 
+uint32_t GlyCore::getLuaMemTotal() {
+    if (!L) return 0;
+
+    int kb = lua_gc(L, LUA_GCCOUNT, 0);
+    int b  = lua_gc(L, LUA_GCCOUNTB, 0);
+
+    return (kb * 1024) + b;
+}
+
+uint8_t GlyCore::getLuaMemPercentage() {
+    uint32_t total = getLuaMemTotal();
+    uint32_t heap = ESP.getHeapSize();
+
+    if (heap == 0) return 0;
+
+    return (total * 100) / heap;
+}
+
 bool GlyCore::hasErrors() const {
     return !errors.isEmpty();
 }

@@ -22,6 +22,8 @@ public:
     void setBtnKeyboard(uint8_t, uint8_t, const char *const);
     uint16_t getAvarageFPS();
     uint16_t getInstantFPS();
+    uint32_t getLuaMemTotal();
+    uint8_t getLuaMemPercentage();
     bool hasErrors() const;
     const String& getErrors() const;
     void clearErrors();
