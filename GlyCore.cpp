@@ -6,6 +6,23 @@
 #define GLY_HOOK_IMPL
 #include "hooks.cpp"
 
+static char lua_chunk_buffer[128];
+
+static const char* progmemReader(lua_State*, void* data, size_t* size) {
+  auto ptr = static_cast<const char**>(data);
+  size_t i = 0;
+
+  while (i < sizeof(lua_chunk_buffer)) {
+    char c = pgm_read_byte(*ptr);
+    if (c == '\0') break;
+    lua_chunk_buffer[i++] = c;
+    (*ptr)++;
+  }
+
+  *size = i;
+  return (i > 0) ? lua_chunk_buffer : nullptr;
+}
+
 void GlyCore::init(uint16_t width, uint16_t height)
 {
     if (started) return;
@@ -103,33 +120,18 @@ void GlyCore::init(uint16_t width, uint16_t height)
     }
 
     do {
-        size_t game_len = 0;
-        size_t engine_len = 0;
-
-        if (engine_storage) {
-            engine_len = strlen_P(reinterpret_cast<PGM_P>(engine_storage));
-            engine_code = new char[engine_len];
+        if (engine_storage == nullptr) {
+            size_t engine_len = strlen(engine_code);
+            if(luaL_loadbuffer(L, engine_code, engine_len, "E") != LUA_OK) {
+                errors += luaL_checkstring(L, -1);
+                break;
+            }
         } else {
-            engine_len = strlen(engine_code);
-        }
-
-        if (engine_code == nullptr || engine_len == 0) {
-            errors += "empty engine";
-            break;
-        }
-
-        if (engine_storage) {
-            strncpy_P(engine_code, reinterpret_cast<PGM_P>(engine_storage), engine_len);
-            engine_code[engine_len] = '\0';
-        }
-
-        if(luaL_loadbuffer(L, engine_code, engine_len, "E") != LUA_OK) {
-            errors += luaL_checkstring(L, -1);
-            break;
-        }
-
-        if(engine_storage) {
-            delete[] engine_code;
+            const char* ctx = reinterpret_cast<const char*>(engine_storage);
+            if(lua_load(L, progmemReader, &ctx, "E", "t") != LUA_OK){
+                errors += luaL_checkstring(L, -1);
+                break;
+            }
         }
 
         if(lua_pcall(L, 0, 0, 0) != LUA_OK) {
@@ -141,30 +143,18 @@ void GlyCore::init(uint16_t width, uint16_t height)
         lua_pushnumber(L, width);
         lua_pushnumber(L, height);
 
-        if (game_storage) {
-            game_len = strlen_P(reinterpret_cast<PGM_P>(game_storage));
-            game_code = new game_code[game_len];
+        if (game_storage == nullptr) {
+            size_t game_len = strlen(game_code);
+            if(luaL_loadbuffer(L, game_code, game_len, "E") != LUA_OK) {
+                errors += luaL_checkstring(L, -1);
+                break;
+            }
         } else {
-            game_len = strlen(game_code);
-        }
-
-        if (game_code == nullptr || game_len == 0) {
-            errors += "empty game";
-            break;
-        }
-
-        if (game_storage) {
-            strncpy_P(game_code, reinterpret_cast<PGM_P>(game_storage), game_len);
-            game_code[game_len] = '\0';
-        }
-
-        if(luaL_loadbuffer(L, game_code, game_len, "G") != LUA_OK) {
-            errors += luaL_checkstring(L, -1);
-            break;
-        }
-
-        if(game_storage) {
-            delete[] game_code;
+            const char* ctx = reinterpret_cast<const char*>(game_storage);
+            if(lua_load(L, progmemReader, &ctx, "E", "t") != LUA_OK){
+                errors += luaL_checkstring(L, -1);
+                break;
+            }
         }
 
         if(lua_pcall(L, 0, 1, 0) != LUA_OK) {
