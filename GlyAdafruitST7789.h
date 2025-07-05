@@ -1,9 +1,10 @@
 #ifndef H_GLY_ADAFRUIT_ST7789
 #define H_GLY_ADAFRUIT_ST7789
 
-#include <cstdint>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
+
+#include "GlyTypes.h"
 
 namespace GlyAdafruitST7789 {
     Adafruit_ST7789 *tft = nullptr;
@@ -39,23 +40,14 @@ void native_draw_flush()
 void native_draw_color(uint32_t color)
 {
     if (!GlyAdafruitST7789::tft) return;
-#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ != __ORDER_BIG_ENDIAN__)
-    union { uint32_t value; struct { uint8_t a, b, g, r;};} rgba = { color };
-#else
-    union { uint32_t value; struct { uint8_t r, g, b, a;};} rgba = { color };
-#endif    
+    color_u rgba = { color };
     GlyAdafruitST7789::current_color = GlyAdafruitST7789::tft->color565(rgba.r, rgba.g, rgba.b);
 }
 
 void native_draw_clear(uint32_t color)
 {
     if (!GlyAdafruitST7789::tft) return;
-
-#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ != __ORDER_BIG_ENDIAN__)
-    union { uint32_t value; struct { uint8_t a, b, g, r;};} rgba = { color };
-#else
-    union { uint32_t value; struct { uint8_t r, g, b, a;};} rgba = { color };
-#endif    
+    color_u rgba = { color };  
     GlyAdafruitST7789::tft->fillScreen(GlyAdafruitST7789::tft->color565(rgba.r, rgba.g, rgba.b));
 }
 

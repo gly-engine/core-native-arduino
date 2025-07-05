@@ -263,10 +263,15 @@ uint32_t GlyCore::getLuaMemTotal() {
 
 uint8_t GlyCore::getLuaMemPercentage() {
     uint32_t total = getLuaMemTotal();
-    uint32_t heap = ESP.getHeapSize();
+    uint32_t heap = 0; 
 
+#if defined(ARDUINO_ARCH_ESP32)
+    heap = ESP.getHeapSize();
+#elif defined(ARDUINO_ARCH_RP2040)
+    heap = 200000;
+#endif
+    
     if (heap == 0) return 0;
-
     return (total * 100) / heap;
 }
 
