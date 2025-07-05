@@ -4,7 +4,7 @@
 #if defined(ARDUINO_ARCH_RP2040) || !defined(__cplusplus)
 #include <stdint.h>
 #else
-#include <cstdint.h>
+#include <cstdint>
 #endif
 
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ != __ORDER_BIG_ENDIAN__)
@@ -18,5 +18,8 @@ typedef union {
     struct { uint8_t r, g, b, a;};
 } color_u;
 #endif    
+
+using nullptr_­t = decltype(nullptr);
+#define null nullptr
 
 #endif
