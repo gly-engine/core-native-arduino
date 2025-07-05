@@ -9,6 +9,11 @@
 
 class GlyCore {
 public:
+    template<typename gameType, typename engineType>
+    GlyCore(gameType game, engineType library) {
+        loadEngine(library);
+        loadGame(game);
+    }
     template<typename gameType, typename engineType, typename displayType>
     GlyCore(gameType game, engineType library, displayType display) {
         gly_hook_display_lib(display);
