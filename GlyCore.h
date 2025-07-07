@@ -4,8 +4,9 @@
 #include <cstdint>
 #include <WString.h>
 
-#include "vendor/lua.h"
 #include "hooks.cpp"
+
+typedef struct lua_State lua_State;
 
 class GlyCore {
 public:
@@ -55,6 +56,8 @@ private:
     unsigned long time_last_frame_1s = 0;
     // lua
     lua_State *L;
+    uint16_t Lver;
+    int L_REGISTRYINDEX;
     String errors;
     int ref_native_callback_loop = 0;
     int ref_native_callback_draw = 0;

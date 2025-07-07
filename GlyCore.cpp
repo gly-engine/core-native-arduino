@@ -3,8 +3,16 @@
 #include <math.h>
 #include <Arduino.h>
 
+extern "C" {
+#include "vendor/lua54/lua.h"
+#include "vendor/lua54/lualib.h"
+#include "vendor/lua54/lauxlib.h"
+int lua_iversion(lua_State* L);
+}
+
 #define GLY_HOOK_IMPL
 #include "hooks.cpp"
+
 
 static char lua_chunk_buffer[128];
 
@@ -112,6 +120,8 @@ void GlyCore::init(uint16_t width, uint16_t height)
     gly_hook_display_init(width, height);
 
     L = luaL_newstate();
+    Lver = lua_version(L);
+    L_REGISTRYINDEX = Lver == 504? LUA_REGISTRYINDEX: (-10000);
     luaL_openlibs(L);
 
     for (const auto& fn : glylibs) {
@@ -139,7 +149,10 @@ void GlyCore::init(uint16_t width, uint16_t height)
             break;
         }
 
-        lua_getglobal(L, "native_callback_init");
+        if (lua_getglobal(L, "native_callback_init") != LUA_TFUNCTION) {
+            errors += "native_callback_init";
+            break;
+        }
         lua_pushnumber(L, width);
         lua_pushnumber(L, height);
 
@@ -167,14 +180,29 @@ void GlyCore::init(uint16_t width, uint16_t height)
             break;
         }
 
-        lua_getglobal(L, "native_callback_loop");
-        ref_native_callback_loop = luaL_ref(L, LUA_REGISTRYINDEX);
+        Serial.println("lua ver:");
+        Serial.println(Lver);
 
-        lua_getglobal(L, "native_callback_draw");
-        ref_native_callback_draw = luaL_ref(L, LUA_REGISTRYINDEX);
         
-        lua_getglobal(L, "native_callback_keyboard");
-        ref_native_callback_keyboard = luaL_ref(L, LUA_REGISTRYINDEX);
+        if (lua_getglobal(L, "native_callback_loop") != LUA_TFUNCTION) {
+            errors += "native_callback_loop";
+            break;
+        }
+        Serial.println("bar");
+        ref_native_callback_loop = luaL_ref(L, L_REGISTRYINDEX);
+        Serial.println("z");
+
+        if (lua_getglobal(L, "native_callback_draw") != LUA_TFUNCTION) {
+            errors += "native_callback_draw";
+            break;
+        }
+        ref_native_callback_draw = luaL_ref(L, L_REGISTRYINDEX);
+        
+        if (lua_getglobal(L, "native_callback_keyboard") != LUA_TFUNCTION) {
+            errors += "native_callback_keyboard";
+            break;
+        }
+        ref_native_callback_keyboard = luaL_ref(L, L_REGISTRYINDEX);
 
         started = true;
     }
@@ -195,7 +223,7 @@ bool GlyCore::update()
             btn.lastState = state;
             btn.lastChange = now;
             if (ref_native_callback_keyboard != 0) {
-                lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_keyboard);
+                lua_rawgeti(L, L_REGISTRYINDEX, ref_native_callback_keyboard);
                 lua_pushstring(L, btn.name);
                 lua_pushboolean(L, state);
                 if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
@@ -211,13 +239,13 @@ bool GlyCore::update()
         time_delta = delta;
         time_last_frame = now;
 
-        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_loop);
+        lua_rawgeti(L, L_REGISTRYINDEX, ref_native_callback_loop);
         lua_pushnumber(L, delta/1000);
         if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
             errors += luaL_checkstring(L, -1);
         }
     
-        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_native_callback_draw);
+        lua_rawgeti(L, L_REGISTRYINDEX, ref_native_callback_draw);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             errors += luaL_checkstring(L, -1);
         }
