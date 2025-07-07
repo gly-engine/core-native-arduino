@@ -1,11 +1,14 @@
 # Core Native Arduino
 
-> Embed games and applications made in gly engine on your esp32, esp8266, raspbarry, stm.. and other devices using arduino ecosystem.
+<img src="https://raw.githubusercontent.com/RodrigoDornelles/RodrigoDornelles/refs/heads/master/media/gly-pong-esp32.gif" alt="gly-engine pong on esp32" align="right" width="30%"/>
+
+> Embed games and applications made in gly engine on your esp32, esp8266, raspbarry... and other devices using arduino ecosystem.
 
 ### Features
 
  * Supports Lua 5.1 and 5.4 _(include `GlyLua51.h` or `GlyLua54.h`)_
- * supports third-party graphics libraries (`Adafruit_GFX.h` or `TFT_eSPI.h`)
+ * Supports 60+ FPS _(depends on display capabilities and communication speed)_
+ * Supports third-party graphics libraries _(`Adafruit_GFX.h` or `TFT_eSPI.h`)_
  * Supports MEMPROG chunked loading to avoid heap usage for scripts
 
 ### Example
