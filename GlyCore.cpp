@@ -179,18 +179,12 @@ void GlyCore::init(uint16_t width, uint16_t height)
             errors += luaL_checkstring(L, -1);
             break;
         }
-
-        Serial.println("lua ver:");
-        Serial.println(Lver);
-
         
         if (lua_getglobal(L, "native_callback_loop") != LUA_TFUNCTION) {
             errors += "native_callback_loop";
             break;
         }
-        Serial.println("bar");
         ref_native_callback_loop = luaL_ref(L, L_REGISTRYINDEX);
-        Serial.println("z");
 
         if (lua_getglobal(L, "native_callback_draw") != LUA_TFUNCTION) {
             errors += "native_callback_draw";
