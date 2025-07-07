@@ -267,8 +267,12 @@ uint8_t GlyCore::getLuaMemPercentage() {
 
 #if defined(ARDUINO_ARCH_ESP32)
     heap = ESP.getHeapSize();
-#elif defined(ARDUINO_ARCH_RP2040)
+#elif defined(ARDUINO_ARCH_ESP8266)
+    heap = 80000;
+#elif defined(PICO_RP2040)
     heap = 200000;
+#elif defined(PICO_RP2350)
+    heap = 500000;
 #endif
     
     if (heap == 0) return 0;
