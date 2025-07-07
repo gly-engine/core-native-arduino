@@ -7,12 +7,10 @@ extern "C" {
 #include "vendor/lua54/lua.h"
 #include "vendor/lua54/lualib.h"
 #include "vendor/lua54/lauxlib.h"
-int lua_iversion(lua_State* L);
 }
 
 #define GLY_HOOK_IMPL
 #include "hooks.cpp"
-
 
 static char lua_chunk_buffer[128];
 

@@ -1,10 +1,12 @@
-
 #include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h>
+
 #include <GlyCore.h>
 #include <GlyLua54.h>
-#include <GlyEngine.h>
+#include <GlyEngineLite.h>
 #include <GlySamplePong.h>
-#include <GlyAdafruitST7789.h>
+#include <GlyDisplayTFT.h>
 
 #define TFT_CS   5
 #define TFT_DC   16
@@ -17,7 +19,7 @@
 
 SPIClass spiTFT(VSPI);
 Adafruit_ST7789 tft(&spiTFT, TFT_CS, TFT_DC, TFT_RST);
-GlyCore engine(GlySamplePong, GlyEngine, &tft);
+GlyCore engine(GlySamplePong, GlyEngineLite, &tft);
 
 void setup() {
     Serial.begin(115200);

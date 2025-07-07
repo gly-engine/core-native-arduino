@@ -25,14 +25,20 @@ void gly_hook_display_init(uint16_t width, uint16_t height)
 {
     if (!GlyDisplay::tft) return;
     if (width > height) {
-        GlyDisplay::tft->init(height, width);
 #if defined(_TFT_eSPIH_)
+        GlyDisplay::tft->init();
         GlyDisplay::tft->setRotation(3);
 #else
+        GlyDisplay::tft->init(height, width);
         GlyDisplay::tft->setRotation(1);
 #endif
     } else {
+
+#if defined(_TFT_eSPIH_)
+        GlyDisplay::tft->init();
+#else
         GlyDisplay::tft->init(height, width);
+#endif
         GlyDisplay::tft->setRotation(0);
     }
 }
@@ -40,14 +46,14 @@ void gly_hook_display_init(uint16_t width, uint16_t height)
 void native_draw_start()
 {
 #if defined(_TFT_eSPIH_)
-    GlyTFT_eSPI::tft->startWrite();
+    GlyDisplay::tft->startWrite();
 #endif
 }
 
 void native_draw_flush()
 {
 #if defined(_TFT_eSPIH_)
-    GlyTFT_eSPI::tft->endWrite();
+    GlyDisplay::tft->endWrite();
 #endif
 }
 
@@ -93,9 +99,12 @@ void native_text_mensure(const char* text, int16_t* w, int16_t* h)
 {
     if (!GlyDisplay::tft) return;
     int16_t x, y;
-    uint16_t width, height;
+    uint16_t width = 1, height = 1;
 
+#if !defined(_TFT_eSPIH_)
+//! @todo support TFT_eSPI.h
     GlyDisplay::tft->getTextBounds(text, 0, 0, &x, &y, &width, &height);
+#endif
 
     if (w) *w =  width;
     if (h) *h =  height;

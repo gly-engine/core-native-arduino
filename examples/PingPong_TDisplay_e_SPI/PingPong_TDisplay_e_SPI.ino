@@ -1,16 +1,16 @@
+#include <TFT_eSPI.h>
 
-#include <SPI.h>
 #include <GlyCore.h>
 #include <GlyLua54.h>
-#include <GlyEngine.h>
+#include <GlyEngineMicro.h>
 #include <GlySamplePong.h>
-#include <GlyTFTeSPI.h>
+#include <GlyDisplayTFT.h>
 
 #define BTN_A    0
 #define BTN_B    35
 
 TFT_eSPI tft;
-GlyCore engine(GlySamplePong, GlyEngine, &tft);
+GlyCore engine(GlySamplePong, GlyEngineMicro, &tft);
 
 void setup() {
     Serial.begin(115200);
