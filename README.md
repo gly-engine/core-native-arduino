@@ -1,22 +1,67 @@
 # Core Native Arduino
 
-> Embed games and applications made in gly engine on your esp32, esp8266, raspbary.. and other devices using arduino ecosystem.
+<img src="https://raw.githubusercontent.com/RodrigoDornelles/RodrigoDornelles/refs/heads/master/media/gly-pong-esp32.gif" alt="gly-engine pong on esp32" align="right" width="30%"/>
+
+> Embed games and applications made in gly engine on your esp32, esp8266, raspbarry... and other devices using arduino ecosystem.
+
+### Features
+
+ * Supports Lua 5.1 and 5.4 _(include `GlyLua51.h` or `GlyLua54.h`)_
+ * Supports 60+ FPS _(depends on display capabilities and communication speed)_
+ * Supports third-party graphics libraries _(`Adafruit_GFX.h` or `TFT_eSPI.h`)_
+ * Supports MEMPROG chunked loading to avoid heap usage for scripts
+
+### Example
 
 ```cpp
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h>
+
 #include <GlyCore.h>
+#include <GlyLua54.h>
 #include <GlyEngine.h>
-#include <GlyST7789.h>
-#include <GlySamplePong.h>
+#include <GlyDisplayTFT.h>
 
-GlyCore engine;
+#define TFT_CS   5
+#define TFT_DC   16
+#define TFT_RST  23
+#define TFT_MOSI 19
+#define TFT_SCLK 18
+#define TFT_BL   4
 
-void setup() {
-    engine.init(135, 240, GlySamplePong);
-    engine.setBtnKey(0, "up");
-    engine.setBtnKey(35, "down");
+const auto LuaCode = F(R"(
+local App = {
+  title = "Game",
+  verison = "1.0.0",
 }
 
+function App.draw(std, props)
+  std.draw.clear(std.color.green)
+  std.draw.color(std.color.black)
+  std.text.put(1, 1, "Hello!")
+end
+
+return App
+)");
+
+Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+GlyCore engine(LuaCode, GlyEngine, &tft);
+
+void setup() {
+    Serial.begin(115200);
+
+    engine.init(240, 135);
+    engine.setFramerate(1);
+    
+    pinMode(TFT_BL, OUTPUT);
+    digitalWrite(TFT_BL, HIGH);
+}
+  
 void loop() {
-    engine.update();
+  if (engine.hasErrors()) {
+    Serial.println(engine.getErrors());
+    for(;;);
+  }
+  engine.update();
 }
 ```
