@@ -15,3 +15,5 @@ hasErrors               KEYWORD2
 update                  KEYWORD2
 getInstantFPS           KEYWORD2
 getAvarageFPS           KEYWORD2
+getLuaMemTotal          KEYWORD2
+getLuaMemPercentage     KEYWORD2
