@@ -15,7 +15,11 @@
 
 To install the Gly Core Native for Arduino, open the Arduino IDE, go to **Sketch > Include Library > Manage Libraries**, then search for **"GlyEngine"** in the Library Manager. Click Install next to the library name.
 
-<div align="center"><img src="https://raw.githubusercontent.com/gly-engine/core-native-arduino/refs/heads/main/.github/install.png" alt="how to install GlyEngine on Arduino IDE"/></div>
+<div align="center">
+<a href="https://docs.arduino.cc/libraries/glyengine" target="_blank">
+<img src="https://raw.githubusercontent.com/gly-engine/core-native-arduino/refs/heads/main/.github/install.png" alt="how to install GlyEngine on Arduino IDE"/>
+</a>
+</div>
 
 ## Example
 
