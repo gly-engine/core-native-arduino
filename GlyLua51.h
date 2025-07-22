@@ -1,6 +1,11 @@
 
 #ifndef H_GLY_LUA51
 #define H_GLY_LUA51
+
+#ifdef DOXYGEN
+class GlyLua51 { int; };
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -7,6 +7,7 @@
 #include <cstdint>
 #endif
 
+//! @cond
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ != __ORDER_BIG_ENDIAN__)
 typedef union { 
     uint32_t value;
@@ -17,7 +18,8 @@ typedef union {
     uint32_t value;
     struct { uint8_t r, g, b, a;};
 } color_u;
-#endif    
+#endif
+//! @endcond 
 
 using nullptr_­t = decltype(nullptr);
 #define null nullptr

@@ -1,6 +1,12 @@
 #ifndef H_GLYCORE
 #define H_GLYCORE
 
+#ifdef DOXYGEN
+class GlyCore : public GlyDisplayTFT {};
+class GlyCore { public: GlyLua51 lua_State; };
+class GlyCore { public: GlyLua54 lua_State; };
+#endif
+
 #include <cstdint>
 #include <WString.h>
 
