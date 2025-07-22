@@ -21,7 +21,4 @@ typedef union {
 #endif
 //! @endcond 
 
-using nullptr_­t = decltype(nullptr);
-#define null nullptr
-
 #endif
