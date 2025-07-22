@@ -122,23 +122,4 @@ void native_text_font_size(uint8_t size)
     GlyDisplay::tft->setTextSize(size/3);
 }
 
-void native_text_font_name(const char*)
-{
-
-}
-void native_text_font_default(uint8_t)
-{
-
-}
-
-void native_text_font_previous()
-{
-
-}
-
-void native_image_draw(int16_t, int16_t, const char*)
-{
-
-}
-
 #endif
