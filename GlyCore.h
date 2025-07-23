@@ -27,6 +27,13 @@ public:
         loadEngine(library);
         loadGame(game);
     }
+    template<typename gameType, typename engineType, typename displayType, typename inputType>
+    GlyCore(gameType game, engineType library, displayType display, inputType input) {
+        gly_hook_display_lib(display);
+        gly_hook_input_lib(input);
+        loadEngine(library);
+        loadGame(game);
+    }
     void init(uint16_t, uint16_t);
     bool update();
     void setFramerate(uint8_t);
@@ -69,6 +76,8 @@ private:
     int ref_native_callback_draw = 0;
     int ref_native_callback_keyboard = 0;
     // buttons
+    friend void keyboardUpdateBind(const char*, bool);
+    void keyboardUpdate(const char*, bool);
     struct ButtonInfo {
         uint8_t pin;
         bool activeLow;

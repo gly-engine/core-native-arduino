@@ -5,8 +5,39 @@
 #include <vector>
 #include <initializer_list>
 
+class GlyInputBase {
+public:
+    virtual ~GlyInputBase() = default;
+    virtual void update() = 0;
+    virtual size_t getCount() const = 0;
+    virtual const char* getName(size_t i) const = 0;
+    virtual bool isUpdated(size_t i) const = 0;
+    virtual bool isPressed(size_t i) const = 0;
+};
+
+//! @cond
+namespace GlyInput {
+    GlyInputBase* buttons = nullptr;
+}
+//! @endcond
+
+void gly_hook_input_lib(GlyInputBase* lib) {
+    GlyInput::buttons = lib;
+}
+
+void gly_hook_input_loop(void (*callback)(const char*, bool)) {
+    auto* btns = GlyInput::buttons;
+    if (!btns || !callback) return;
+    btns->update();
+    for (size_t i = 0; i < btns->getCount(); i++) {
+        if (btns->isUpdated(i)) {
+            callback(const_cast<char*>(btns->getName(i)), btns->isPressed(i));
+        }
+    }
+}
+
 template<typename TSerial>
-class GlyInputUart {
+class GlyInputUart: public GlyInputBase {
 public:
     struct Button {
         const char* name;

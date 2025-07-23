@@ -13,6 +13,7 @@ extern "C" {
 #include "hooks.cpp"
 
 static char lua_chunk_buffer[128];
+static GlyCore* instance = nullptr;
 
 static const char* progmemReader(lua_State*, void* data, size_t* size) {
   auto ptr = static_cast<const char**>(data);
@@ -32,6 +33,11 @@ static const char* progmemReader(lua_State*, void* data, size_t* size) {
 void GlyCore::init(uint16_t width, uint16_t height)
 {
     if (started) return;
+
+    if (instance) {
+        errors += "unique instance is allowed!";
+        return;
+    }
 
     static const luaL_Reg glylibs[] = {
         {"native_draw_start", [](lua_State *L) {
@@ -196,9 +202,28 @@ void GlyCore::init(uint16_t width, uint16_t height)
         }
         ref_native_callback_keyboard = luaL_ref(L, L_REGISTRYINDEX);
 
+        instance = this;
         started = true;
     }
     while(0);
+}
+
+void GlyCore::keyboardUpdate(const char* key, bool pressed)
+{
+    if (ref_native_callback_keyboard != 0) {
+        lua_rawgeti(L, L_REGISTRYINDEX, ref_native_callback_keyboard);
+        lua_pushstring(L, key);
+        lua_pushboolean(L, pressed);
+        if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
+            errors = lua_tostring(L, -1);
+            lua_pop(L, 1);
+        }
+    }
+}
+
+void keyboardUpdateBind(const char* key, bool pressed)
+{
+    instance->keyboardUpdate(key, pressed);
 }
 
 bool GlyCore::update()
@@ -208,21 +233,14 @@ bool GlyCore::update()
     unsigned long now = micros();
     unsigned long delta = now - time_last_frame;
 
+    gly_hook_input_tick(&keyboardUpdateBind);
     for (uint8_t i = 0; i < numButtons; ++i) {
         ButtonInfo& btn = buttons[i];
         bool state = (digitalRead(btn.pin) == (btn.activeLow ? LOW : HIGH));
         if (state != btn.lastState && (now - btn.lastChange >= time_debounce)) {
+            keyboardUpdate(btn.name, state);
             btn.lastState = state;
             btn.lastChange = now;
-            if (ref_native_callback_keyboard != 0) {
-                lua_rawgeti(L, L_REGISTRYINDEX, ref_native_callback_keyboard);
-                lua_pushstring(L, btn.name);
-                lua_pushboolean(L, state);
-                if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
-                    errors = lua_tostring(L, -1);
-                    lua_pop(L, 1);
-                }
-            }
         }
     }
 
@@ -230,6 +248,8 @@ bool GlyCore::update()
         count_frame++;
         time_delta = delta;
         time_last_frame = now;
+
+        gly_hook_input_loop(&keyboardUpdateBind);
 
         lua_rawgeti(L, L_REGISTRYINDEX, ref_native_callback_loop);
         lua_pushnumber(L, delta/1000);
