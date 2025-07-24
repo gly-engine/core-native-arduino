@@ -8,7 +8,7 @@
 class GlyInputBase {
 public:
     virtual ~GlyInputBase() = default;
-    virtual void update() = 0;
+    virtual bool update() = 0;
     virtual size_t getCount() const = 0;
     virtual const char* getName(size_t i) const = 0;
     virtual bool isUpdated(size_t i) const = 0;
@@ -28,10 +28,11 @@ void gly_hook_input_lib(GlyInputBase* lib) {
 void gly_hook_input_loop(void (*callback)(const char*, bool)) {
     auto* btns = GlyInput::buttons;
     if (!btns || !callback) return;
-    btns->update();
-    for (size_t i = 0; i < btns->getCount(); i++) {
-        if (btns->isUpdated(i)) {
-            callback(const_cast<char*>(btns->getName(i)), btns->isPressed(i));
+    if(btns->update()) {
+        for (size_t i = 0; i < btns->getCount(); i++) {
+            if (btns->isUpdated(i)) {
+                callback(const_cast<char*>(btns->getName(i)), btns->isPressed(i));
+            }
         }
     }
 }
@@ -50,7 +51,8 @@ public:
     GlyInputUart(TSerial* serial, std::initializer_list<Button> buttons) 
       : serial(serial), buttons(buttons.begin(), buttons.end()) {}
 
-    void update() {
+    bool update() {
+        bool some_button_is_updated = false;
         unsigned long current_time = micros();
         while (serial->available()) {
             int read_byte = serial->read();
@@ -65,6 +67,7 @@ public:
 
         for (auto& button : buttons) {
             if (buffer_count >= 3 && buffer_packet == button.code) {
+                some_button_is_updated = true;
                 button.last_pressed = current_time;
                 button.updated = button.pressed != true;
                 button.pressed = true;
@@ -74,6 +77,7 @@ public:
             
             bool button_timeout = (current_time - button.last_pressed) >= timeout;
             if (button.pressed && button_timeout) {
+                some_button_is_updated = true;
                 button.updated = true;
                 button.pressed = false;
                 continue;
@@ -81,6 +85,8 @@ public:
             
             button.updated = false;
         }
+
+        return some_button_is_updated;
     }
 
     void setTimeout(uint16_t ms) {

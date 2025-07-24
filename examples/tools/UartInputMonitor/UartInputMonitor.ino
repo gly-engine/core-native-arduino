@@ -22,13 +22,14 @@ void setup() {
 }
 
 void loop() {
-  buttons.update();
-  for (auto i = 0; i < buttons.getCount(); i++) {
-    if (buttons.isUpdated(i)) {
-        auto name = buttons.getName(i);
-        auto press = buttons.isPressed(i);
-        Serial.print(press ? '+' : '-');
-        Serial.println(name);
+  if(buttons.update()) {
+    for (auto i = 0; i < buttons.getCount(); i++) {
+      if (buttons.isUpdated(i)) {
+          auto name = buttons.getName(i);
+          auto press = buttons.isPressed(i);
+          Serial.print(press ? '+' : '-');
+          Serial.println(name);
+      }
     }
   }
 }
