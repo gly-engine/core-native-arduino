@@ -13,8 +13,10 @@
 #include "GlyTypes.h"
 
 #ifndef GLY_HOOK_NATIVE
-CREATE_GLY_HOOK(void, gly_hook_display_lib, ())
-CREATE_GLY_HOOK(void, gly_hook_display_lib, (nullptr_­t))
+CREATE_GLY_HOOK(void, gly_hook_input_lib, (decltype(nullptr)))
+CREATE_GLY_HOOK(void, gly_hook_input_tick, (void (*)(const char*, bool)))
+CREATE_GLY_HOOK(void, gly_hook_input_loop, (void (*)(const char*, bool)))
+CREATE_GLY_HOOK(void, gly_hook_display_lib, (decltype(nullptr)))
 CREATE_GLY_HOOK(void, gly_hook_display_init, (uint16_t, uint16_t))
 #endif
 

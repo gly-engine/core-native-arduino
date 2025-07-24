@@ -1,6 +1,12 @@
 #ifndef H_GLYCORE
 #define H_GLYCORE
 
+#ifdef DOXYGEN
+class GlyCore : public GlyDisplayTFT {};
+class GlyCore { public: GlyLua51 lua_State; };
+class GlyCore { public: GlyLua54 lua_State; };
+#endif
+
 #include <cstdint>
 #include <WString.h>
 
@@ -21,6 +27,13 @@ public:
         loadEngine(library);
         loadGame(game);
     }
+    template<typename gameType, typename engineType, typename displayType, typename inputType>
+    GlyCore(gameType game, engineType library, displayType display, inputType input) {
+        gly_hook_display_lib(display);
+        gly_hook_input_lib(input);
+        loadEngine(library);
+        loadGame(game);
+    }
     void init(uint16_t, uint16_t);
     bool update();
     void setFramerate(uint8_t);
@@ -33,6 +46,8 @@ public:
     bool hasErrors() const;
     const String& getErrors() const;
     void clearErrors();
+    void setBtnState(const char*, bool);
+    void setBtnState(const char*, int);
 
 private:
     bool started = false;
@@ -63,6 +78,7 @@ private:
     int ref_native_callback_draw = 0;
     int ref_native_callback_keyboard = 0;
     // buttons
+    friend void keyboardUpdate(const char*, bool);
     struct ButtonInfo {
         uint8_t pin;
         bool activeLow;

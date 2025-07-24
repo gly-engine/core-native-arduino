@@ -3,6 +3,11 @@
 
 #include "GlyTypes.h"
 
+#ifdef DOXYGEN
+class GlyDisplayTFT: private Adafruit_ST7789, private Adafruit_ST7796S, private TFT_eSPI {};
+#endif
+
+//! @cond
 namespace GlyDisplay {
 #if defined(_ADAFRUIT_ST7789H_)
     Adafruit_ST7789 *tft = nullptr;
@@ -15,6 +20,7 @@ namespace GlyDisplay {
 #endif
     uint16_t current_color = 0;
 }
+//! @endcond
 
 void gly_hook_display_lib(decltype(GlyDisplay::tft) lib)
 {
@@ -114,25 +120,6 @@ void native_text_font_size(uint8_t size)
 {
     if (!GlyDisplay::tft) return;
     GlyDisplay::tft->setTextSize(size/3);
-}
-
-void native_text_font_name(const char*)
-{
-
-}
-void native_text_font_default(uint8_t)
-{
-
-}
-
-void native_text_font_previous()
-{
-
-}
-
-void native_image_draw(int16_t, int16_t, const char*)
-{
-
 }
 
 #endif
