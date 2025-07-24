@@ -208,7 +208,7 @@ void GlyCore::init(uint16_t width, uint16_t height)
     while(0);
 }
 
-void GlyCore::keyboardUpdate(const char* key, bool pressed)
+void GlyCore::setBtnState(const char* key, bool pressed)
 {
     if (ref_native_callback_keyboard != 0) {
         lua_rawgeti(L, L_REGISTRYINDEX, ref_native_callback_keyboard);
@@ -221,9 +221,14 @@ void GlyCore::keyboardUpdate(const char* key, bool pressed)
     }
 }
 
-void keyboardUpdateBind(const char* key, bool pressed)
+void GlyCore::setBtnState(const char* key, int pressed)
 {
-    instance->keyboardUpdate(key, pressed);
+    setBtnState(key, static_cast<bool>(pressed != 0));
+}
+
+void keyboardUpdate(const char* key, bool pressed)
+{
+    instance->setBtnState(key, pressed);
 }
 
 bool GlyCore::update()
@@ -233,12 +238,12 @@ bool GlyCore::update()
     unsigned long now = micros();
     unsigned long delta = now - time_last_frame;
 
-    gly_hook_input_tick(&keyboardUpdateBind);
+    gly_hook_input_tick(&keyboardUpdate);
     for (uint8_t i = 0; i < numButtons; ++i) {
         ButtonInfo& btn = buttons[i];
         bool state = (digitalRead(btn.pin) == (btn.activeLow ? LOW : HIGH));
         if (state != btn.lastState && (now - btn.lastChange >= time_debounce)) {
-            keyboardUpdate(btn.name, state);
+            setBtnState(btn.name, state);
             btn.lastState = state;
             btn.lastChange = now;
         }
@@ -249,7 +254,7 @@ bool GlyCore::update()
         time_delta = delta;
         time_last_frame = now;
 
-        gly_hook_input_loop(&keyboardUpdateBind);
+        gly_hook_input_loop(&keyboardUpdate);
 
         lua_rawgeti(L, L_REGISTRYINDEX, ref_native_callback_loop);
         lua_pushnumber(L, delta/1000);

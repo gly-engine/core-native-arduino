@@ -46,6 +46,8 @@ public:
     bool hasErrors() const;
     const String& getErrors() const;
     void clearErrors();
+    void setBtnState(const char*, bool);
+    void setBtnState(const char*, int);
 
 private:
     bool started = false;
@@ -76,8 +78,7 @@ private:
     int ref_native_callback_draw = 0;
     int ref_native_callback_keyboard = 0;
     // buttons
-    friend void keyboardUpdateBind(const char*, bool);
-    void keyboardUpdate(const char*, bool);
+    friend void keyboardUpdate(const char*, bool);
     struct ButtonInfo {
         uint8_t pin;
         bool activeLow;
