@@ -29,7 +29,7 @@ void loop() {
   if (engine.hasErrors()) {
     Serial.println("Lua MEM:" + String(engine.getLuaMemTotal()) + " " + String(engine.getLuaMemPercentage()) + "%");
     Serial.println(engine.getErrors());
-    for(;;);
+    while(1) delay(1000);
   }
   if (engine.update()) {
     Serial.print(engine.getInstantFPS());
