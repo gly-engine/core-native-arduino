@@ -1,0 +1,45 @@
+# Custom Configs
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = "Core Native Arduino"
+PROJECT_NUMBER         = 0.0.2
+PROJECT_BRIEF          = "Gly Engine for Arduino"
+PROJECT_LOGO           = 
+OUTPUT_DIRECTORY       = .
+RECURSIVE              = NO
+CREATE_SUBDIRS         = NO
+STRIP_CODE_COMMENTS    = NO
+CLASS_GRAPH            = NO
+COLLABORATION_GRAPH    = YES
+CALL_GRAPH             = YES
+HAVE_DOT               = YES
+EXTRACT_ALL            = YES
+USE_MATHJAX            = YES
+EXTRACT_STATIC         = NO
+EXTRACT_PRIVATE        = NO
+SHORT_NAMES            = NO
+OPTIMIZE_OUTPUT_FOR_C  = NO
+INLINE_GROUPED_CLASSES = NO
+INLINE_SIMPLE_STRUCTS  = YES
+TYPEDEF_HIDES_STRUCT   = YES
+SHOW_FILES             = NO
+SOURCE_BROWSER         = NO
+VERBATIM_HEADERS       = NO
+MAX_DOT_GRAPH_DEPTH    = 1
+PREDEFINED             = DOXYGEN=
+PLANTUML_JAR_PATH      = $(PLANTUML_JAR_PATH)
+PLANTUML_CFG_FILE      =
+PLANTUML_INCLUDE_PATH  =
+OUTPUT_LANGUAGE        = English
+FILE_PATTERNS          = *.h
+EXTENSION_MAPPING      = h=c++
+#FILTER_PATTERNS        = *.md="lua cli.lua meta library.properties --format '{{ app.sentence }} {{ app.paragraph }}'"
+INPUT                  = .
+#USE_MDFILE_AS_MAINPAGE = README.md
+MARKDOWN_ID_STYLE      = GITHUB
+# Theme: https://jothepro.github.io/doxygen-awesome-css/
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+HTML_EXTRA_STYLESHEET  = $(DOXYGEN_AWESOME_PATH)/doxygen-awesome.css \
+                         $(DOXYGEN_AWESOME_PATH)/doxygen-awesome-sidebar-only.css
+HTML_COLORSTYLE        = LIGHT
